@@ -17,7 +17,6 @@ interface GameCanvasProps {
 }
 
 const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNextEntityChange }) => {
-  const circleTextures = usePreloadedCircularTextures();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Matter.Engine>();
   const currentEntityRef = useRef<Matter.Body | null>(null);
@@ -25,6 +24,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
   const gameOverRef = useRef(false);
   const { width, height } = useGameSize();
   const scaleFactor = getScaleFactor(width);
+  const circleTextures = usePreloadedCircularTextures();
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -52,7 +52,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
     lineCanvas.style.pointerEvents = 'none';
     lineCanvas.style.zIndex = '1';
     canvasRef.current.parentElement?.appendChild(lineCanvas);
-
+    
     const lineCtx = lineCanvas.getContext('2d');
     if (lineCtx) {
       drawGameOverLine(lineCtx, width);
@@ -88,8 +88,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
             Matter.World.remove(engine.world, [bodyA, bodyB]);
             
             const scaledRadius = scaleRadius(nextEntity.radius, scaleFactor);
+            console.log('circleTextures:', circleTextures);
+            console.log('nextEntity.level:', nextEntity.level);
+            console.log('Texture for level:', circleTextures[nextEntity.level]);
             const texture = circleTextures[nextEntity.level]; // e.g.  '/assets/... (base64 data URL)'
-
+            console.log('texture:', texture);
+            
             const newBody = Matter.Bodies.circle(newPos.x, newPos.y, scaledRadius, {
               render: {
                 fillStyle: nextEntity.color, // optional fallback
@@ -101,7 +105,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
               },
               level: nextEntity.level,
             });
-
+            
             Matter.World.add(engine.world, newBody);
             onScoreUpdate(nextEntity.scoreValue);
           }
@@ -125,7 +129,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
     // 1) Create the circle-cropped sprite
     const entity = nextEntityRef.current;
     const circledTexture = await createCircularImage(entity.path, 64);
-
+    
     // 2) Create the Matter body
     const scaledRadius = scaleRadius(entity.radius, scaleFactor);
     const newEntity = Matter.Bodies.circle(x, 50, scaledRadius, {
