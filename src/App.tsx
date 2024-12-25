@@ -35,7 +35,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 p-4 bg-[url('/public/assets/background.webp')] bg-cover bg-center bg-fixed">
+    <div className="min-h-screen bg-gray-900 p-4 bg-[url('/assets/background.webp')] bg-cover bg-center bg-fixed">
       <div className="flex flex-col items-center">
         <div className="bg-gray-800/90 flex items-center space-x-2 mb-4 py-2 px-4">
           <h1 className="text-3xl font-bold text-green-500 drop-shadow-lg">
