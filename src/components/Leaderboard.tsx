@@ -8,12 +8,12 @@ const Leaderboard: React.FC = () => {
   const { topScores, isLoading } = useLeaderboard(type);
 
   return (
-    <div className="flex flex-col bg-gray-700 rounded-lg overflow-hidden border-2 border-red-600">
+    <div className="h-72 flex flex-col bg-gray-700 rounded-lg overflow-hidden border-2 border-red-600">
       <div className="flex items-center justify-center gap-2 p-4 bg-green-700 border-b border-red-600">
         <Trophy className="w-5 h-5 text-yellow-300" />
         <h2 className="text-xl font-bold text-white">Top Players</h2>
       </div>
-
+      
       <div className="flex border-b border-red-600">
         <button
           onClick={() => setType('daily')}
