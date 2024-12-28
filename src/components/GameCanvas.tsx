@@ -29,7 +29,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
   const circleTextures = usePreloadedCircularTextures();
 
   const TRACKING_ZONE_Y = 50; // Fixed y-coordinate for tracking
-  const DROP_COOLDOWN_MS = 1000; // Cooldown in milliseconds (1 second)
   const lastDropTimeRef = useRef(0); // Tracks the last drop time
   
   const dropSoundRef = useRef(new Audio('/assets/sounds/drop.mp3')); // Replace with your drop sound file path
@@ -75,7 +74,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
     Matter.World.add(engine.world, walls);
     Matter.Engine.run(engine);
     Matter.Render.run(render);
-
+    
     engineRef.current = engine;
     
     Matter.Events.on(engine, 'collisionStart', (event) => {
@@ -137,7 +136,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
 
   const handleMouseDown = async (e: React.MouseEvent) => {
     const now = Date.now();
-    if (gameOverRef.current || currentEntityRef.current || now - lastDropTimeRef.current < DROP_COOLDOWN_MS) {
+    if (gameOverRef.current || currentEntityRef.current || now - lastDropTimeRef.current < DROP_COOLDOWN) {
       return; // Exit if within cooldown or other conditions
     }
     
@@ -193,6 +192,19 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
     const nextEntity = getRandomInitialEntity();
     nextEntityRef.current = nextEntity;
     onNextEntityChange(nextEntity);
+
+    setTimeout(() => {
+      if (gameOverRef.current) return;
+      const bodies = Matter.Composite.allBodies(engineRef.current!.world);
+      if (checkGameOver(bodies)) {
+        gameOverRef.current = true;
+        onGameOver();
+      }
+    }, GAME_OVER_CHECK_DELAY);
+  
+    setTimeout(() => {
+      currentEntityRef.current = null;
+    }, DROP_COOLDOWN);
   };
 
   // const handleClick = async (e: React.MouseEvent) => {
@@ -238,7 +250,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
   //       onGameOver();
   //     }
   //   }, GAME_OVER_CHECK_DELAY);
-
+  
   //   setTimeout(() => {
   //     currentEntityRef.current = null;
   //   }, DROP_COOLDOWN);
