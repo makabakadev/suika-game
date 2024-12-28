@@ -207,12 +207,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
     }, DROP_COOLDOWN);
   };
 
-  const handleTouchStart = async (e: React.TouchEvent) => {
+  const handleTouchStart = async (e: React.TouchEvent) => { 
     const now = Date.now();
     if (
       gameOverRef.current ||
       currentEntityRef.current ||
-      now - lastDropTimeRef.current < DROP_COOLDOWN_MS
+      now - lastDropTimeRef.current < DROP_COOLDOWN
     ) {
       return; // Exit if within cooldown or other conditions
     }
@@ -243,7 +243,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
     Matter.World.add(engineRef.current!.world, newEntity);
     currentEntityRef.current = newEntity;
     setIsDragging(true);
-  };
+  };  
   
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging || !currentEntityRef.current) return;
@@ -336,7 +336,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
   // };
 
   return (
-    <div className="relative">
+    <div className="relative" >
       <canvas 
         ref={canvasRef}
         onMouseDown={handleMouseDown}
@@ -346,7 +346,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className="border-2 border-gray-800 rounded-lg"
-        style={{ maxWidth: '100%', height: 'auto' }}
+        style={{ maxWidth: '100%', height: 'auto', touchAction: 'none' }}
       />
     </div>
   );
