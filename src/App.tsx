@@ -13,7 +13,7 @@ function App() {
   const [showScoreSubmission, setShowScoreSubmission] = useState(false);
   const [nextEntity, setNextEntity] = useState<Entity>(getRandomInitialEntity());
   const { height, isMobile } = useGameSize();
-
+  
   const handleGameOver = () => {
     setGameOver(true);
     setShowScoreSubmission(true);

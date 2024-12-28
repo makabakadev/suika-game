@@ -14,7 +14,7 @@ export function createCircularImage(src: string, size: number = 64): Promise<str
       const canvas = document.createElement('canvas');
       canvas.width = size;
       canvas.height = size;
-
+      
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         reject('Could not get 2D context');
@@ -25,10 +25,10 @@ export function createCircularImage(src: string, size: number = 64): Promise<str
       ctx.beginPath();
       ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
       ctx.clip();
-
+      
       // Draw the image into the clipped circle
       ctx.drawImage(img, 0, 0, size, size);
-
+      
       // Convert to data URL
       const dataURL = canvas.toDataURL();
       resolve(dataURL);
