@@ -133,7 +133,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
       lineCanvas.remove();
     };
   }, [width, height, scaleFactor]);
-
+  
   const handleMouseDown = async (e: React.MouseEvent) => {
     const now = Date.now();
     if (gameOverRef.current || currentEntityRef.current || now - lastDropTimeRef.current < DROP_COOLDOWN) {
@@ -187,12 +187,91 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
     Matter.Body.setStatic(currentEntityRef.current, false);
     currentEntityRef.current = null;
     setIsDragging(false);
-
+    
     // Set the next entity
     const nextEntity = getRandomInitialEntity();
     nextEntityRef.current = nextEntity;
     onNextEntityChange(nextEntity);
+    
+    setTimeout(() => {
+      if (gameOverRef.current) return;
+      const bodies = Matter.Composite.allBodies(engineRef.current!.world);
+      if (checkGameOver(bodies)) {
+        gameOverRef.current = true;
+        onGameOver();
+      }
+    }, GAME_OVER_CHECK_DELAY);
+  
+    setTimeout(() => {
+      currentEntityRef.current = null;
+    }, DROP_COOLDOWN);
+  };
 
+  const handleTouchStart = async (e: React.TouchEvent) => {
+    const now = Date.now();
+    if (
+      gameOverRef.current ||
+      currentEntityRef.current ||
+      now - lastDropTimeRef.current < DROP_COOLDOWN_MS
+    ) {
+      return; // Exit if within cooldown or other conditions
+    }
+  
+    lastDropTimeRef.current = now; // Update the last drop time
+  
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const touch = e.touches[0]; // Get the first touch
+    const x = touch.clientX - rect.left;
+  
+    const entity = nextEntityRef.current;
+    const scaledRadius = scaleRadius(entity.radius, scaleFactor);
+    const circledTexture = await createCircularImage(entity.path, 64);
+  
+    // Create the entity at the tracking zone's Y position
+    const newEntity = Matter.Bodies.circle(x, TRACKING_ZONE_Y, scaledRadius, {
+      render: {
+        sprite: {
+          texture: circledTexture,
+          xScale: (scaledRadius * 2) / 64,
+          yScale: (scaledRadius * 2) / 64,
+        },
+      },
+      level: entity.level,
+      isStatic: true, // Keep it static while dragging
+    });
+  
+    Matter.World.add(engineRef.current!.world, newEntity);
+    currentEntityRef.current = newEntity;
+    setIsDragging(true);
+  };
+  
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !currentEntityRef.current) return;
+  
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const touch = e.touches[0]; // Get the first touch
+    const x = touch.clientX - rect.left;
+  
+    // Only update the x position; keep y fixed to TRACKING_ZONE_Y
+    Matter.Body.setPosition(currentEntityRef.current, { x, y: TRACKING_ZONE_Y });
+  };
+  
+  const handleTouchEnd = () => {
+    if (!currentEntityRef.current) return;
+  
+    // Play drop sound
+    dropSoundRef.current.play();
+  
+    // Make the entity dynamic to "drop" it
+    Matter.Body.setStatic(currentEntityRef.current, false);
+    currentEntityRef.current = null;
+    setIsDragging(false);
+  
+    // Set the next entity
+    const nextEntity = getRandomInitialEntity();
+    nextEntityRef.current = nextEntity;
+    onNextEntityChange(nextEntity);
+  
     setTimeout(() => {
       if (gameOverRef.current) return;
       const bodies = Matter.Composite.allBodies(engineRef.current!.world);
@@ -263,6 +342,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         className="border-2 border-gray-800 rounded-lg"
         style={{ maxWidth: '100%', height: 'auto' }}
       />
