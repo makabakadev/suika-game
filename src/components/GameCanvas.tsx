@@ -246,11 +246,17 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
   };  
   
   const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent scrolling during dragging
+    e.stopPropagation(); // Stop propagation to parent elements
+  
     if (!isDragging || !currentEntityRef.current) return;
   
     const rect = canvasRef.current!.getBoundingClientRect();
     const touch = e.touches[0]; // Get the first touch
-    const x = touch.clientX - rect.left;
+    let x = touch.clientX - rect.left;
+  
+    // Clamp the x-coordinate to the canvas bounds
+    x = Math.max(0, Math.min(rect.width, x));
   
     // Only update the x position; keep y fixed to TRACKING_ZONE_Y
     Matter.Body.setPosition(currentEntityRef.current, { x, y: TRACKING_ZONE_Y });
