@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import GameCanvas from './components/GameCanvas';
-import PreviewCanvas from './components/PreviewCanvas';
+// import PreviewCanvas from './components/PreviewCanvas';
 import Leaderboard from './components/Leaderboard';
 import ScoreSubmission from './components/ScoreSubmission';
 import { getRandomInitialEntity } from './utils/gameUtils';
@@ -12,7 +12,7 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [showScoreSubmission, setShowScoreSubmission] = useState(false);
   const [nextEntity, setNextEntity] = useState<Entity>(getRandomInitialEntity());
-  const { height, isMobile } = useGameSize();
+  const { isMobile } = useGameSize();
   
   const handleGameOver = () => {
     setGameOver(true);
@@ -65,13 +65,13 @@ function App() {
               {/* Score and Preview Section */}
               <div className="bg-gray-700 p-4 rounded-lg border-2 border-red-600">
                 <p className="text-gray-300 text-2xl font-bold mb-4">Score: <span className="text-green-400">{score}</span></p>
-                <div>
+                {/* <div>
                   <p className="text-gray-300 text-sm mb-2">Next:</p>
                   <PreviewCanvas entity={nextEntity} />
                   <p className="text-gray-400 text-lg text-center">{nextEntity.name}</p>
-                </div>
+                </div> */}
               </div>
-
+              
               {/* Leaderboard Section */}
               <Leaderboard />
             </div>

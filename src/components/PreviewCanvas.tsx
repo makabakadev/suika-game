@@ -3,72 +3,106 @@ import { Entity } from '../types/game';
 import { useGameSize } from '../hooks/useGameSize';
 import { usePreloadedCircularTextures } from '../hooks/usePreloadedCircularTextures';
 import { getScaleFactor, scaleRadius } from '../utils/scaleUtils';
+import Matter from 'matter-js';
 
 interface PreviewCanvasProps {
-  entity: Entity; // Make sure `entity.level` is part of your Entity type
+  entity: Entity; // Ensure `entity.level` is part of your Entity type
 }
 
 const PreviewCanvas: React.FC<PreviewCanvasProps> = ({ entity }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { width } = useGameSize();
   const scaleFactor = getScaleFactor(width);
-
-  // 1) Grab the preloaded textures (mapping level -> circle-cropped data URL).
-  const circleTextures = usePreloadedCircularTextures();
-
+  const { textures: circleTextures, isLoaded } = usePreloadedCircularTextures(scaleFactor);
+  
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-
+    if (!canvas || !isLoaded) return;
+    
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear the entire 160x160 preview area
-    ctx.clearRect(0, 0, 160, 160);
+    const engine = Matter.Engine.create();
+    const render = Matter.Render.create({
+      canvas: canvas,
+      engine: engine,
+      options: {
+        width: 160,
+        height: 160,
+        wireframes: false,
+        background: '#1a1a1a',
+        pixelRatio: window.devicePixelRatio
+      },
+    });
 
-    // 2) See if we've got a preloaded texture for this entity level
-    const texture = circleTextures[entity.level];
+    Matter.Engine.run(engine);
+    Matter.Render.run(render);
+
+    const scaledRadius = scaleRadius(entity.radius, scaleFactor);
+    // Get texture data and dimensions
+    const textureData = circleTextures[entity.level];
+    if (!textureData) return;
+    
+    const { data: texture, radius: textureRadius } = textureData;
+    
     if (texture) {
-      // Since the texture is already “circle-cropped” at 64x64,
-      // we can draw it as an image at whatever size we need.
-      const scaledRadius = scaleRadius(entity.radius, scaleFactor);
-      const diameter = scaledRadius * 2;
-
       const image = new Image();
-      image.src = texture; // data URL from preloaded textures
+      image.src = texture;
+      const diameter = textureRadius * 2;
 
       image.onload = () => {
-        // Clear again in case the image loaded after a short delay
         ctx.clearRect(0, 0, 160, 160);
-
-        // Center the image at (80,80)
         ctx.drawImage(
           image,
-          80 - scaledRadius,  // top-left X
-          80 - scaledRadius,  // top-left Y
-          diameter,           // width
-          diameter            // height
+          80 - scaledRadius, // Top-left X
+          80 - scaledRadius, // Top-left Y
+          diameter,          // Width
+          diameter           // Height
         );
       };
     } else {
-      // 3) Fallback: no preloaded texture found (or still loading),
-      // so just draw the old fillStyle circle
-      ctx.beginPath();
-      const scaledRadius = scaleRadius(entity.radius, scaleFactor);
-      ctx.arc(80, 80, scaledRadius, 0, Math.PI * 2);
-      ctx.fillStyle = entity.color;
-      ctx.fill();
-      ctx.closePath();
+      const circle = Matter.Bodies.circle(80, 80, scaledRadius, {
+        render: {
+          fillStyle: entity.color,
+        },
+      });
+      Matter.World.add(engine.world, circle);
     }
-  }, [entity, scaleFactor, circleTextures]);
+
+    return () => {
+      Matter.Engine.clear(engine);
+      Matter.Render.stop(render);
+    };
+  }, [entity, scaleFactor, circleTextures, isLoaded]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={160}
-      height={160}
-      className="rounded-lg"
-    />
+    <div
+      className="relative"
+      style={{
+        position: 'relative', // Ensure the container establishes a stacking context
+        zIndex: 10,           // Set z-index higher than other elements
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        width={160}
+        height={160}
+        className="rounded-lg"
+        style={{
+          zIndex: 11, // Ensure the canvas itself is rendered above the container
+        }}
+      />
+      {!isLoaded && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75"
+          style={{
+            zIndex: 12, // Overlay for the loading screen
+          }}
+        >
+          <div className="text-white text-lg font-semibold">Loading...</div>
+        </div>
+      )}
+    </div>
   );
 };
 

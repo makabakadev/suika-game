@@ -26,16 +26,16 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
   const [isDragging, setIsDragging] = useState(false);
   const { width, height } = useGameSize();
   const scaleFactor = getScaleFactor(width);
-  const circleTextures = usePreloadedCircularTextures();
-
+  const { textures: circleTextures, isLoaded } = usePreloadedCircularTextures(scaleFactor);
+  
   const TRACKING_ZONE_Y = 50; // Fixed y-coordinate for tracking
   const lastDropTimeRef = useRef(0); // Tracks the last drop time
   
   const dropSoundRef = useRef(new Audio('/assets/sounds/drop.mp3')); // Replace with your drop sound file path
   
   useEffect(() => {
-    if (!canvasRef.current) return;
-
+    if (!isLoaded || !canvasRef.current) return;
+    
     const engine = Matter.Engine.create();
     const render = Matter.Render.create({
       canvas: canvasRef.current,
@@ -99,19 +99,23 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
             Matter.World.remove(engine.world, [bodyA, bodyB]);
             
             const scaledRadius = scaleRadius(nextEntity.radius, scaleFactor);
-            console.log('circleTextures:', circleTextures);
-            console.log('nextEntity.level:', nextEntity.level);
-            console.log('Texture for level:', circleTextures[nextEntity.level]);
-            const texture = circleTextures[nextEntity.level]; // e.g.  '/assets/... (base64 data URL)'
-            console.log('texture:', texture);
             
+            // Get texture data and dimensions
+            const textureData = circleTextures[nextEntity.level];
+            if (!textureData) return;
+            
+            const { data: texture, radius: textureRadius } = textureData;
+            
+            // Calculate texture scaling based on actual texture dimensions
+            const xScale = (scaledRadius * 2) / textureRadius;
+            const yScale = (scaledRadius * 2) / textureRadius;
+
             const newBody = Matter.Bodies.circle(newPos.x, newPos.y, scaledRadius, {
               render: {
-                fillStyle: nextEntity.color, // optional fallback
                 sprite: {
                   texture,
-                  xScale: (scaledRadius * 2) / 64,
-                  yScale: (scaledRadius * 2) / 64,
+                  xScale,
+                  yScale,
                 },
               },
               level: nextEntity.level,
@@ -132,40 +136,50 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
       Matter.Render.stop(render);
       lineCanvas.remove();
     };
-  }, [width, height, scaleFactor]);
+  }, [isLoaded, width, height, scaleFactor]);
   
   const handleMouseDown = async (e: React.MouseEvent) => {
     const now = Date.now();
     if (gameOverRef.current || currentEntityRef.current || now - lastDropTimeRef.current < DROP_COOLDOWN) {
       return; // Exit if within cooldown or other conditions
     }
-    
+  
     lastDropTimeRef.current = now; // Update the last drop time
-
+  
     const rect = canvasRef.current!.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    
+  
     const entity = nextEntityRef.current;
     const scaledRadius = scaleRadius(entity.radius, scaleFactor);
-    const circledTexture = await createCircularImage(entity.path, 64);
-    
+  
+    // Retrieve texture data
+    const textureData = circleTextures[entity.level];
+    if (!textureData) return; // If the texture is not loaded, exit gracefully
+  
+    const { data: texture, radius: textureRadius } = textureData;
+    console.log('Texture data:', { radius: textureRadius });
+  
+    // Calculate texture scaling based on actual texture dimensions
+    const xScale = (scaledRadius * 2) / textureRadius;
+    const yScale = (scaledRadius * 2) / textureRadius;
+  
     // Create the entity at the tracking zone's Y position
     const newEntity = Matter.Bodies.circle(x, TRACKING_ZONE_Y, scaledRadius, {
       render: {
         sprite: {
-          texture: circledTexture,
-          xScale: (scaledRadius * 2) / 64,
-          yScale: (scaledRadius * 2) / 64,
+          texture,
+          xScale,
+          yScale,
         },
       },
       level: entity.level,
       isStatic: true, // Keep it static while dragging
     });
-
+  
     Matter.World.add(engineRef.current!.world, newEntity);
     currentEntityRef.current = newEntity;
     setIsDragging(true);
-  };
+  };  
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !currentEntityRef.current) return;
@@ -354,6 +368,13 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
         className="border-2 border-gray-800 rounded-lg"
         style={{ maxWidth: '100%', height: 'auto', touchAction: 'none' }}
       />
+      
+      {/* Loading overlay */}
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75">
+          <div className="text-white text-lg font-semibold">Loading...</div>
+        </div>
+      )}
     </div>
   );
 };
