@@ -3,7 +3,6 @@ import Matter from 'matter-js';
 import { ENTITIES } from '../constants/entities';
 import { getRandomInitialEntity } from '../utils/gameUtils';
 import { usePreloadedCircularTextures } from '../hooks/usePreloadedCircularTextures';
-import { createCircularImage } from '../hooks/createCircularImage';
 import { useGameSize } from '../hooks/useGameSize';
 import { createConfetti } from '../hooks/createConfetti';
 import { checkGameOver } from '../utils/gameLogic';
@@ -48,7 +47,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
         pixelRatio: window.devicePixelRatio
       },
     });
-
+    
     // Create a separate canvas for the game over line
     const lineCanvas = document.createElement('canvas');
     lineCanvas.width = width;
@@ -81,55 +80,56 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
       event.pairs.forEach((pair) => {
         const bodyA = pair.bodyA as Matter.Body & { level?: number };
         const bodyB = pair.bodyB as Matter.Body & { level?: number };
-
+    
         if (bodyA.level && bodyB.level && bodyA.level === bodyB.level) {
           const nextLevel = bodyA.level + 1;
-          const nextEntity = ENTITIES.find(e => e.level === nextLevel);
-
-          // Create a new Audio instance for each collision
+          const nextEntity = ENTITIES.find((e) => e.level === nextLevel);
+    
+          // Play collision sound
           const collisionSound = new Audio('/assets/sounds/collision.mp3'); // Replace with your collision sound file path
           collisionSound.play();
-          
+    
           if (nextEntity) {
             const newPos = {
               x: (bodyA.position.x + bodyB.position.x) / 2,
               y: (bodyA.position.y + bodyB.position.y) / 2,
             };
-            
+    
+            // Remove the merged entities from the world
             Matter.World.remove(engine.world, [bodyA, bodyB]);
-            
+    
             const scaledRadius = scaleRadius(nextEntity.radius, scaleFactor);
-            
-            // Get texture data and dimensions
+    
+            // Retrieve the preloaded texture
             const textureData = circleTextures[nextEntity.level];
             if (!textureData) return;
-            
-            const { data: texture, radius: textureRadius } = textureData;
-            
-            // Calculate texture scaling based on actual texture dimensions
-            const xScale = (scaledRadius * 2) / textureRadius;
-            const yScale = (scaledRadius * 2) / textureRadius;
-
+    
+            const { data: texture } = textureData;
+    
+            // Create a new Matter.js body for the merged entity
             const newBody = Matter.Bodies.circle(newPos.x, newPos.y, scaledRadius, {
               render: {
                 sprite: {
-                  texture,
-                  xScale,
-                  yScale,
+                  texture, // Use the preloaded and scaled texture
+                  xScale: 1, // Texture is already correctly scaled
+                  yScale: 1,
                 },
               },
               level: nextEntity.level,
             });
-            
+    
+            // Add the new entity to the Matter.js world
             Matter.World.add(engine.world, newBody);
+    
+            // Update the score
             onScoreUpdate(nextEntity.scoreValue);
-             
-             // Trigger confetti effect
+    
+            // Trigger confetti effect
             createConfetti(engine.world, newPos.x, newPos.y);
           }
         }
       });
-    });
+    });    
 
     return () => {
       Matter.Engine.clear(engine);
@@ -138,48 +138,45 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
     };
   }, [isLoaded, width, height, scaleFactor]);
   
-  const handleMouseDown = async (e: React.MouseEvent) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
     const now = Date.now();
     if (gameOverRef.current || currentEntityRef.current || now - lastDropTimeRef.current < DROP_COOLDOWN) {
-      return; // Exit if within cooldown or other conditions
+      return;
     }
   
-    lastDropTimeRef.current = now; // Update the last drop time
+    lastDropTimeRef.current = now;
   
     const rect = canvasRef.current!.getBoundingClientRect();
     const x = e.clientX - rect.left;
   
     const entity = nextEntityRef.current;
     const scaledRadius = scaleRadius(entity.radius, scaleFactor);
-  
-    // Retrieve texture data
     const textureData = circleTextures[entity.level];
-    if (!textureData) return; // If the texture is not loaded, exit gracefully
   
-    const { data: texture, radius: textureRadius } = textureData;
-    console.log('Texture data:', { radius: textureRadius });
+    if (!textureData) {
+      console.error('Texture data not found for entity level:', entity.level);
+      return;
+    }
   
-    // Calculate texture scaling based on actual texture dimensions
-    const xScale = (scaledRadius * 2) / textureRadius;
-    const yScale = (scaledRadius * 2) / textureRadius;
+    const { data: texture } = textureData;
   
-    // Create the entity at the tracking zone's Y position
+    // Create the Matter.js body
     const newEntity = Matter.Bodies.circle(x, TRACKING_ZONE_Y, scaledRadius, {
       render: {
         sprite: {
-          texture,
-          xScale,
-          yScale,
+          texture, // Use the preloaded and scaled PNG texture
+          xScale: 1,
+          yScale: 1,
         },
       },
       level: entity.level,
-      isStatic: true, // Keep it static while dragging
+      isStatic: true,
     });
   
     Matter.World.add(engineRef.current!.world, newEntity);
     currentEntityRef.current = newEntity;
     setIsDragging(true);
-  };  
+  };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !currentEntityRef.current) return;
@@ -239,19 +236,26 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
   
     const entity = nextEntityRef.current;
     const scaledRadius = scaleRadius(entity.radius, scaleFactor);
-    const circledTexture = await createCircularImage(entity.path, 64);
+    const textureData = circleTextures[entity.level];
   
-    // Create the entity at the tracking zone's Y position
+    if (!textureData) {
+      console.error('Texture data not found for entity level:', entity.level);
+      return;
+    }
+  
+    const { data: texture } = textureData;
+  
+    // Create the Matter.js body
     const newEntity = Matter.Bodies.circle(x, TRACKING_ZONE_Y, scaledRadius, {
       render: {
         sprite: {
-          texture: circledTexture,
-          xScale: (scaledRadius * 2) / 64,
-          yScale: (scaledRadius * 2) / 64,
+          texture, // Use the preloaded and scaled PNG texture
+          xScale: 1,
+          yScale: 1,
         },
       },
       level: entity.level,
-      isStatic: true, // Keep it static while dragging
+      isStatic: true,
     });
   
     Matter.World.add(engineRef.current!.world, newEntity);
