@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Matter from 'matter-js';
-import { ENTITIES } from '../constants/entities';
-import { getRandomInitialEntity } from '../utils/gameUtils';
-import { usePreloadedCircularTextures } from '../hooks/usePreloadedCircularTextures';
-import { useGameSize } from '../hooks/useGameSize';
-import { createConfetti } from '../hooks/createConfetti';
-import { checkGameOver } from '../utils/gameLogic';
-import { drawGameOverLine } from '../utils/renderUtils';
-import { getScaleFactor, scaleRadius } from '../utils/scaleUtils';
-import { DROP_COOLDOWN, GAME_OVER_CHECK_DELAY } from '../utils/gameConstants';
+import { ENTITIES } from '../constants/entities.ts';
+import { getRandomInitialEntity } from '../utils/gameUtils.ts';
+import { usePreloadedCircularTextures } from '../hooks/usePreloadedCircularTextures.ts';
+import { useGameSize } from '../hooks/useGameSize.ts';
+import { createConfetti } from '../hooks/createConfetti.ts';
+import { checkGameOver } from '../utils/gameLogic.ts';
+import { drawGameOverLine } from '../utils/renderUtils.ts';
+import { getScaleFactor, scaleRadius } from '../utils/scaleUtils.ts';
+import { DROP_COOLDOWN, GAME_OVER_CHECK_DELAY } from '../utils/gameConstants.ts';
 
 interface GameCanvasProps {
   onGameOver: () => void;

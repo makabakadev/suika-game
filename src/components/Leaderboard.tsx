@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useLeaderboard } from '../hooks/useLeaderboard';
+import { useLeaderboard } from '../hooks/useLeaderboard.ts';
 import { Trophy, Calendar, Clock } from 'lucide-react';
-import type { LeaderboardType } from '../types/leaderboard';
+import type { LeaderboardType } from '../types/leaderboard.ts';
 
 const Leaderboard: React.FC = () => {
   const [type, setType] = useState<LeaderboardType>('daily');
   const { topScores, isLoading } = useLeaderboard(type);
-
+  
   return (
     <div className="h-72 flex flex-col bg-gray-700 rounded-lg overflow-hidden border-2 border-red-600">
       <div className="flex items-center justify-center gap-2 p-4 bg-green-700 border-b border-red-600">
