@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { saveScore } from '../utils/scoreUtils';
+import { saveScore } from '../../utils/scoreUtils';
 
 interface ScoreSubmissionProps {
   score: number;
@@ -16,12 +16,12 @@ const ScoreSubmission: React.FC<ScoreSubmissionProps> = ({ score, onSubmit }) =>
       setError('Please enter a name');
       return;
     }
-
+    
     setIsSubmitting(true);
     try {
       await saveScore(playerName.trim(), score);
       onSubmit();
-    } catch (err) {
+    } catch {
       setError('Failed to save score. Please try again.');
     } finally {
       setIsSubmitting(false);

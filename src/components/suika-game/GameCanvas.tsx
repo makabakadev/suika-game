@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Matter from 'matter-js';
-import { ENTITIES } from '../constants/entities.ts';
-import { getRandomInitialEntity } from '../utils/gameUtils.ts';
-import { usePreloadedCircularTextures } from '../hooks/usePreloadedCircularTextures.ts';
-import { useGameSize } from '../hooks/useGameSize.ts';
-import { createConfetti } from '../hooks/createConfetti.ts';
-import { checkGameOver } from '../utils/gameLogic.ts';
-import { drawGameOverLine } from '../utils/renderUtils.ts';
-import { getScaleFactor, scaleRadius } from '../utils/scaleUtils.ts';
-import { DROP_COOLDOWN, GAME_OVER_CHECK_DELAY } from '../utils/gameConstants.ts';
+import { ENTITIES } from '../../constants/suikaEntities.ts';
+import { getRandomInitialEntity } from '../../utils/gameUtils.ts';
+import { usePreloadedCircularTextures } from '../../hooks/usePreloadedCircularTextures.ts';
+import { useGameSize } from '../../hooks/useGameSize.ts';
+import { createConfetti } from '../../hooks/createConfetti.ts';
+import { checkGameOver } from '../../utils/gameLogic.ts';
+import { drawGameOverLine } from '../../utils/renderUtils.ts';
+import { getScaleFactor, scaleRadius } from '../../utils/scaleUtils.ts';
+import { DROP_COOLDOWN, GAME_OVER_CHECK_DELAY } from '../../utils/gameConstants.ts';
 
 interface GameCanvasProps {
   onGameOver: () => void;
@@ -63,7 +63,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
     if (lineCtx) {
       drawGameOverLine(lineCtx, width);
     }
-
+    
     const walls = [
       Matter.Bodies.rectangle(width/2, height + 10, width, 20, { isStatic: true }), // bottom
       Matter.Bodies.rectangle(-10, height/2, 20, height, { isStatic: true }), // left
@@ -369,7 +369,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onGameOver, onScoreUpdate, onNe
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="border-2 border-gray-800 rounded-lg"
+        className="border-2 border-gray-300 rounded-lg"
         style={{ maxWidth: '100%', height: 'auto', touchAction: 'none' }}
       />
       
