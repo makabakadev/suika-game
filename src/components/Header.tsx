@@ -27,7 +27,7 @@ export function Header() {
                 Publications
               </a>
               <a
-                href='https://bork.institute/'
+                href='https://research.bork.institute/'
                 className={`font-serif text-gray-500 hover:text-gray-800 transition-colors `}
               >
                 Research
