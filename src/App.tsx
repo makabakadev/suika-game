@@ -20,17 +20,18 @@ function PublicationPageWrapper() {
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100 p-4 bg-cover bg-center bg-fixed flex">
+      <div className="min-h-screen bg-white">
         <Header />
         
         {/* Main Content Area */}
-        <div className="flex-grow mt-20 sm:mt-24">
+        <div className="mt-20 sm:mt-24">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/publication/:id" element={<PublicationPageWrapper />} />
           </Routes>
-          <Footer />
         </div>
+
+        <Footer />
       </div>
     </Router>
   );
