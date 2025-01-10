@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ENTITIES } from '../constants/suikaEntities';
+import { ENTITIES } from '../utils/suikaEntities';
 
 /**
  * Preloads and scales PNG textures for game entities based on the game width.

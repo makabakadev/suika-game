@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { publications } from '../constants/publicationData';
+import { publications } from '../utils/publicationData';
 import { BookMarked, GraduationCap, BookOpen, FileText } from 'lucide-react';
 
-export function PublicationsList() {
+export function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const filteredPublications = selectedCategory === 'all' 
-    ? publications 
+    ? publications
     : publications.filter(pub => pub.category === selectedCategory);
-
+  
   return (
     <div className="max-w-4xl mx-auto">
       <section className="mb-12">
-        <h2 className="font-serif text-2xl font-bold mb-6">Research Publications</h2>
+        <h2 className="font-serif text-2xl font-bold mb-6">Journal of BORK Science</h2>
         
         <div className="flex flex-wrap gap-2 mb-8">
           {[

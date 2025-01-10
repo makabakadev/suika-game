@@ -1,4 +1,3 @@
-import React from 'react';
 import * as RiIcons from "react-icons/ri";
 import { SocialLink } from './SocialLink';
 
@@ -30,16 +29,6 @@ export function Footer() {
             locked={true}
           />
         </div>
-        <p className="text-center text-xs text-gray-500 font-mono">
-          <a
-            href='https://bork.institute'
-            className="font-serif hover:text-gray-800 transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            [ACADEMIC_DISCLAIMER]
-          </a> :: [RESEARCH_IN_PROGRESS]
-        </p>
       </div>
     </footer>
   );

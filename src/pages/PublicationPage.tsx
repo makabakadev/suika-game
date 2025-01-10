@@ -1,7 +1,7 @@
-import { Publication } from '../constants/publicationData';
+import { Publication } from '../utils/publicationData';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from 'react-markdown'; 
 
 interface PublicationPageProps {
   publication: Publication;
@@ -9,13 +9,13 @@ interface PublicationPageProps {
 
 export function PublicationPage({ publication }: PublicationPageProps) {
   return (
-    <div className="max-w-4xl mx-auto py-4 sm:py-8">
-      <Link to="/" className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 mb-6 sm:mb-8">
+    <div key={publication.id} className="max-w-4xl mx-auto">
+      <Link to="/" className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800">
         <ArrowLeft className="w-4 h-4" />
         <span>Back to Publications</span>
       </Link>
-
-      {publication.component ? (
+      
+      {publication.id === 'gravitational-bork' ? (
         <div className="mb-8">
           {publication.component}
         </div>
@@ -61,3 +61,4 @@ export function PublicationPage({ publication }: PublicationPageProps) {
     </div>
   );
 }
+

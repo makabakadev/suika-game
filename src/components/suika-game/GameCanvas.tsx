@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Matter from 'matter-js';
-import { ENTITIES } from '../../constants/suikaEntities.ts';
+import { ENTITIES } from '../../utils/suikaEntities.ts';
 import { getRandomInitialEntity } from '../../utils/gameUtils.ts';
 import { usePreloadedCircularTextures } from '../../hooks/usePreloadedCircularTextures.ts';
 import { useGameSize } from '../../hooks/useGameSize.ts';
